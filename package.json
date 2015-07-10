@@ -1,0 +1,28 @@
+{
+    "name": "atom-karma",
+    "version": "0.0.1",
+    "description": "Atom plugin for the Karma test runner",
+    "main": "./lib/atom-karma",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/schmuli/atom-karma.git"
+    },
+    "keywords": [
+        "atom",
+        "atom-plugin",
+        "karma",
+        "atom-karma"
+    ],
+    "author": "Schmulik Raskin <schmuli@gmail.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/schmuli/atom-karma/issues"
+    },
+    "homepage": "https://github.com/schmuli/atom-karma#readme",
+    "engines": {
+        "atom": ">=1.0.0 <2.0.0"
+    }
+}
