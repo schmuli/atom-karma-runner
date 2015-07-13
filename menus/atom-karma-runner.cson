@@ -1,0 +1,10 @@
+'menu': [
+    'label': 'Packages'
+    'submenu': [
+        'label': 'Karma Runner'
+        'submenu': [
+            'label': 'Start'
+            'command': 'atom-karma-runner:start'
+        ]
+    ]
+]

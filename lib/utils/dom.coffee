@@ -20,15 +20,12 @@ createTag = (tagName, attributes, content) ->
         attributes = null
 
     element = document.createElement tagName
-
     addAttributes element, attributes
-
     addContent element, content
-
     element
 
 addAttributes = (element, attributes) ->
-    return if !attributes
+    return unless attributes
 
     if typeof attributes is 'string'
         attributes =
@@ -41,7 +38,7 @@ addAttributes = (element, attributes) ->
     element
 
 addContent = (element, content) ->
-    return if !content
+    return unless content
 
     content.forEach (item) ->
         if typeof item is 'string'
@@ -52,7 +49,7 @@ addContent = (element, content) ->
     element
 
 addEvents = (element, events) ->
-    return if !events
+    return unless events
 
     keys = Object.keys events
     keys.forEach (key) ->
