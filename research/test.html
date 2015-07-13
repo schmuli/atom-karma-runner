@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            
+            .karma-results {
+                background-color: grey;
+                height: 300px;
+                display: flex;
+            }
+            
+            .karma-results > .pane {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                position: relative;
+            }
+            
+            .karma-results > .slider {
+                width: 5px;
+                cursor: ew-resize;
+                display: flex;
+                align-items: center;
+            }
+            
+            .karma-results > .slider > div {
+                width: 100%;
+            }
+            
+            .karma-results > .slider > div > div {
+                border-bottom: 2px solid black;
+                margin-bottom: 2px;
+            }
+            
+            .karma-results > .pane > .toolbar {
+                display: flex;
+                align-items: center;
+                height: 30px;
+                padding: 5px;
+            }
+            
+            .karma-results > .tree > .toolbar > div {
+                flex: 1;
+            }
+            
+            .karma-results > .pane > .toolbar button {
+                margin-right: 5px;
+            }
+            
+            .karma-results > .pane > .content {
+                flex: 1;
+                border: solid 1px black;
+            }
+            
+            .karma-results > .tree ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                color: white;
+            }
+            
+            .karma-results > .tree > ul {
+                overflow: auto;
+            }
+            
+            .karma-results > .tree ul > li {
+                white-space: nowrap;
+            }
+            
+            .karma-results > .tree li.closed > ul {
+                display: none;
+            }
+            
+            .karma-results > .pane > ul ul {
+                margin-left: 15px;
+            }
+            
+            .karma-results i {
+                display: inline-block;
+                width: 14px;
+                height: 14px;
+            }
+
+        </style>
+    </head>
+
+    <body>
+
+        <div class="karma-results">
+            <div class="pane tree">
+                <div class="toolbar">
+                    <div>
+                        <button>
+                            <i class="icon hide-passed"></i>
+                        </button>
+                    </div>
+
+                    <button>
+                        <i class="icon settings"></i>
+                    </button>
+                </div>
+
+                <ul class="content">
+
+                </ul>
+            </div>
+            <div class="slider">
+                <div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="pane log">
+                <div class="toolbar">
+                    <div class="status"></div>
+                </div>
+
+                <div class="content"></div>
+            </div>
+        </div>
+
+        <script>
+            var dom = (function() {
+                var dom = {};
+                dom.tag = createTag;
+                dom.addTag = addTag;
+                dom.attributes = addAttributes;
+                dom.content = addContent;
+                dom.on = addEvents;
+
+                var tags = ['div', 'ul', 'li', 'span', 'p', 'i'];
+                tags.forEach(function(tag) {
+                    addTag(tag);
+                });
+
+                return dom;
+
+                function addTag(tagName) {
+                    dom[tagName] = function(attributes, content) {
+                        return createTag(tagName, attributes, content);
+                    }
+                }
+
+                function createTag(tagName, attributes, content) {
+                    if (!content && Array.isArray(attributes)) {
+                        content = attributes;
+                        attributes = {};
+                    }
+
+                    var element = document.createElement(tagName);
+                    addAttributes(element, attributes);
+                    addContent(element, content);
+                    return element;
+                }
+
+                function addAttributes(element, attributes) {
+                    if (!attributes) {
+                        return;
+                    }
+
+                    if (typeof attributes === 'string') {
+                        attributes = {
+                            class: attributes
+                        }
+                    }
+                    Object.keys(attributes)
+                        .forEach(function(attribute) {
+                            element.setAttribute(attribute, attributes[attribute]);
+                        });
+                }
+
+                function addContent(element, content) {
+                    if (!content) {
+                        return;
+                    }
+
+                    content.forEach(function(elm) {
+                        if (typeof elm === 'string') {
+                            elm = document.createTextNode(elm);
+                        }
+
+                        element.appendChild(elm);
+                    });
+                }
+
+                function addEvents(element, events) {
+                    Object.keys(events)
+                        .forEach(function(event) {
+                            element.addEventListener(event, events[event]);
+                        });
+                }
+            }())
+
+        </script>
+        <script>
+            var Tree = (function(dom) {
+                var root;
+
+                var __extends = function(d, b) {
+                    for (var p in b)
+                        if (b.hasOwnProperty(p)) d[p] = b[p];
+
+                    function __() {
+                        this.constructor = d;
+                    }
+                    __.prototype = b.prototype;
+                    d.prototype = new __();
+                };
+
+                function Tree() {
+                    this.element = root;
+                    this.browsers = {};
+                }
+
+                Tree.attachTo = function(container) {
+                    root = container;
+                };
+
+                Tree.prototype.addBrowser = function(browser, specs) {
+                    var existing = this.browsers[browser.id];
+                    if (!existing) {
+                        this.browsers[browser.id] = new Browser(browser.id, browser.name, specs, this);
+                    } else {
+                        existing.updateSpecs(specs);
+                    }
+                };
+
+                function TreeNode(specs, parent, type) {
+                    this.parent = parent;
+                    this.suites = {};
+                    this.specs = {};
+
+                    this._createElement(type);
+
+                    this.updateSpecs(specs);
+                }
+
+                TreeNode.prototype._createElement = function(type) {
+                    this.textElement = dom.span();
+                    this.element = dom.ul();
+
+                    var listItem = dom.li('closed', [
+                        dom.div([
+                            dom.i('icon-' + type),
+                            this.textElement
+                        ]),
+                        this.element
+                    ]);
+                    dom.on(listItem, {
+                        'click': function(e) {
+                            e.stopPropagation();
+
+                            var classes = e.currentTarget.classList;
+                            classes.toggle('closed');
+                        }
+                    });
+                    this.parent.element.appendChild(listItem);
+                };
+
+                TreeNode.prototype._updateText = function(text) {
+                    this.textElement.innerHTML = text;
+                }
+
+                TreeNode.prototype.updateSpecs = function(specs) {
+                    Object.keys(specs)
+                        .forEach(function(key) {
+                            if (key === '_') {
+                                this._updateSpecs(specs[key]);
+                            } else {
+                                this._updateSuite(key, specs[key]);
+                            }
+                        }, this);
+                };
+
+                TreeNode.prototype._updateSpecs = function(specs) {
+                    specs.forEach(function(spec) {
+                        var existing = this.specs[spec];
+                        if (!existing) {
+                            this.specs[spec] = new Spec(spec, this);
+                        }
+                    }, this);
+                };
+
+                TreeNode.prototype._updateSuite = function(suiteName, suite) {
+                    var existing = this.suites[suiteName];
+                    if (existing) {
+                        existing.updateSpecs(suite);
+                    } else {
+                        existing = new Suite(suiteName, suite, this);
+                    }
+                };
+
+                function Browser(id, name, specs, tree) {
+                    TreeNode.call(this, specs, tree, 'browser');
+
+                    this.id = id;
+                    this.name = name;
+
+                    this._updateText(name);
+                }
+                __extends(Browser, TreeNode);
+
+                function Suite(name, specs, parent) {
+                    TreeNode.call(this, specs, parent, 'suite');
+
+                    this.name = name;
+                    this._updateText(name);
+                }
+                __extends(Suite, TreeNode);
+
+                function Spec(name, parent) {
+                    this.name = name;
+                    this.parent = parent;
+                    this._createElement();
+                }
+
+                Spec.prototype._createElement = function() {
+                    this.element = dom.li([
+                        dom.i('icon-spec'),
+                        this.name
+                    ]);
+
+                    dom.on(this.element, {
+                        'click': function(e) {
+                            e.stopPropagation();
+
+                            e.currentTarget.classList.toggle('selected');
+                        }
+                    });
+
+                    this.parent.element.appendChild(this.element);
+                };
+
+                return Tree;
+            }(dom));
+
+        </script>
+        <script>
+            var runner = (function() {
+                var browser = {
+                    id: '56385534',
+                    name: 'Chrome 43.0.2357 (Windows 7 0.0.0)'
+                }
+                var info = {
+                    total: 9,
+                    specs: {
+                        'angular-state-machine-sync': {
+                            _: [],
+                            ALL: {
+                                _: ['should change the state when sending correct message',
+                                    'should not change the state when sending incorrect message',
+                                    'should return the states',
+                                    'should return the messages',
+                                    'should return true for the specific message',
+                                    'should return true if the message is available for current state',
+                                    'should return the messages available in the current state'
+                                ]
+                            },
+                            another: {
+                                _: ['has another suite']
+                            }
+                        },
+                        'some other tests': {
+                            _: ['has other tests']
+                        }
+                    }
+                };
+
+                return function() {
+                    var tree = new Tree();
+
+                    run([{
+                        action: function() {
+                            // browser_start
+                            tree.addBrowser(browser, info.specs);
+                        },
+                        timeout: 0
+                    }]);
+                }
+
+                function run(methods) {
+                    var next = function() {
+                        var method = methods.shift();
+
+                        setTimeout(function() {
+                            method.action();
+
+                            if (methods.length > 0) {
+                                next();
+                            }
+                        }, method.timeout || 1000);
+                    }
+
+                    next();
+                }
+            }());
+
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var MINIMUM_WIDTH = 100;
+                var target;
+
+                function coerce(x) {
+                    if (x < MINIMUM_WIDTH) {
+                        return MINIMUM_WIDTH;
+                    }
+                    var parentWidth = target.parentElement.clientWidth;
+                    if (x > parentWidth - MINIMUM_WIDTH) {
+                        return parentWidth - MINIMUM_WIDTH;
+                    }
+                    return x;
+                }
+
+                function update(e) {
+                    var x = coerce(e.x);
+                    target.style.flex = 'none';
+                    target.style.width = x + 'px';
+                }
+
+                function mouseUp(e) {
+                    update(e);
+                    document.removeEventListener('mousemove', update);
+                    document.removeEventListener('mouseup', mouseUp);
+                }
+
+                document.querySelector('.slider')
+                    .addEventListener('mousedown', function(e) {
+                        target = e.currentTarget.previousElementSibling;
+
+                        document.addEventListener('mousemove', update);
+                        document.addEventListener('mouseup', mouseUp);
+                    });
+
+                var treeEl = document.querySelector('.tree > .content');
+                Tree.attachTo(treeEl);
+                runner();
+            });
+
+        </script>
+    </body>
+
+</html>
