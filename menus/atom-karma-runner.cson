@@ -1,3 +1,10 @@
+'context-menu': {
+    '.tree-view.full-menu [data-name="karma.conf.js"]': [
+        'label': 'Start Karma',
+        'command': 'atom-karma-runner:start'
+    ]
+}
+
 'menu': [
     'label': 'Packages'
     'submenu': [

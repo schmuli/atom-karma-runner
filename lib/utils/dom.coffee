@@ -1,20 +1,15 @@
 root = exports || {}
 
-root.tag = createTag
-root.addTag = addTag
-root.attributes = addAttributes
-root.content = addContent
-root.on = addEvents
-
 tags = ['div', 'ul', 'li', 'i', 'p', 'span']
-tags.forEach (tagName) ->
-    addTag tagName
 
-addTag = (tagName) ->
+root.addTag = addTag = (tagName) ->
     root[tagName] = (attributes, content) ->
         createTag tagName, attributes, content
 
-createTag = (tagName, attributes, content) ->
+tags.forEach (tagName) ->
+    addTag tagName
+
+root.tag = createTag = (tagName, attributes, content) ->
     if !content && Array.isArray(attributes)
         content = attributes
         attributes = null
@@ -24,7 +19,7 @@ createTag = (tagName, attributes, content) ->
     addContent element, content
     element
 
-addAttributes = (element, attributes) ->
+root.attributes = addAttributes = (element, attributes) ->
     return unless attributes
 
     if typeof attributes is 'string'
@@ -37,7 +32,7 @@ addAttributes = (element, attributes) ->
 
     element
 
-addContent = (element, content) ->
+root.content = addContent = (element, content) ->
     return unless content
 
     content.forEach (item) ->
@@ -48,7 +43,7 @@ addContent = (element, content) ->
 
     element
 
-addEvents = (element, events) ->
+root.events = addEvents = (element, events) ->
     return unless events
 
     keys = Object.keys events
@@ -56,3 +51,9 @@ addEvents = (element, events) ->
         element.addEventListener key, events[key]
 
     element
+
+root.$ = (selector, context = document) ->
+    context.querySelectorAll(selector)
+
+root.$$ = (selector, context = document) ->
+    context.querySelector(selector)
