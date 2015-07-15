@@ -22,10 +22,12 @@ getKarmaModule = (project) ->
     getPath project, 'node_modules', 'karma'
 
 projectPath = (item) ->
-    if !item
-        return atom.project.getPaths()[0]
+    if item
+        atom.project.relativizePath(item)[0]
 
-    atom.project.relativizePath(item)[0]
+    projects = atom.project.getPaths()
+    return projects[0] if projects.length > 0
+    null
 
 getSelected = (e) ->
     if e.detail
