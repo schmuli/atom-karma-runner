@@ -22,7 +22,7 @@ requireKarma = ->
     {allowUnsafeEval} = require 'loophole'
     allowUnsafeEval -> require exports.projectDetails.karma
 
-parseVersion (version) ->
+parseVersion = (version) ->
     parts = version.split '.'
 
     major: parts[0]
