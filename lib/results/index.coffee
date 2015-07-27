@@ -1,5 +1,5 @@
-module.export = class Results
-    addBrowser: (browser, info) ->
+module.exports = class Results
+    addBrowserInfo: (browser, info) ->
         console.log 'adding browser info', browser.name, info
 
     updateStatus: (browser, specResult, log) ->
@@ -7,3 +7,6 @@ module.export = class Results
         console.log '   spec result', specResult
         console.log '   browser    ', browser.lastResult
         console.log '   log        ', log
+
+    reset: ->
+        console.log 'reseting'
