@@ -8,7 +8,7 @@ class AtomKarmaRunner
     activate: ->
         @subscriptions = new CompositeDisposable
 
-        commands(@subscriptions)
+        commands @subscriptions
 
     deactivate: ->
         @subscriptions?.dispose()

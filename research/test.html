@@ -78,13 +78,44 @@
             }
             
             .karma-results > .pane > ul ul {
-                margin-left: 15px;
+                margin-left: 30px;
             }
             
-            .karma-results i {
+            .karma-results .icon {
                 display: inline-block;
                 width: 14px;
                 height: 14px;
+                vertical-align: middle;
+                background-color: red;
+            }
+            
+            .karma-results .icon + span {
+                margin-left: 5px;
+                vertical-align: middle;
+            }
+            
+            .selected > .spec + span {
+                background-color: darkblue;
+            }
+            
+            .karma-results > .tree li .tree-node {
+                display: inline-block;
+                width: 0;
+                height: 0;
+                margin-left: 0;
+                margin-right: 4px;
+                vertical-align: middle;
+                border-top: 4px solid;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+            }
+            
+            .karma-results > .tree li.closed .tree-node {
+                margin-left: 2px;
+                margin-right: 2px;
+                border-left: 4px solid;
+                border-top: 4px solid transparent;
+                border-bottom: 4px solid transparent;
             }
 
         </style>
@@ -200,8 +231,25 @@
 
         </script>
         <script>
+            var SelectionManager = (function() {
+                function SelectionManager() {}
+
+                SelectionManager.prototype.set = function(node) {
+                    if (this.selected) {
+                        this.selected.classList.remove('selected');
+                    }
+
+                    this.selected = node;
+                    this.selected.classList.add('selected');
+                };
+
+                return SelectionManager;
+            }());
+
             var Tree = (function(dom) {
                 var root;
+
+                var selectionManager = new SelectionManager();
 
                 var __extends = function(d, b) {
                     for (var p in b)
@@ -248,7 +296,8 @@
 
                     var listItem = dom.li('closed', [
                         dom.div([
-                            dom.i('icon-' + type),
+                            dom.i('tree-node'),
+                            dom.i('icon ' + type),
                             this.textElement
                         ]),
                         this.element
@@ -323,15 +372,17 @@
 
                 Spec.prototype._createElement = function() {
                     this.element = dom.li([
-                        dom.i('icon-spec'),
-                        this.name
+                        dom.i('icon spec'),
+                        dom.span([
+                            this.name
+                        ])
                     ]);
 
                     dom.on(this.element, {
                         'click': function(e) {
                             e.stopPropagation();
 
-                            e.currentTarget.classList.toggle('selected');
+                            selectionManager.set(e.currentTarget);
                         }
                     });
 
@@ -382,6 +433,11 @@
                             tree.addBrowser(browser, info.specs);
                         },
                         timeout: 0
+                    }, {
+                        action: function() {
+
+                        },
+                        timeout: 1000
                     }]);
                 }
 
