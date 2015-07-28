@@ -1,6 +1,6 @@
 root = exports || {}
 
-tags = ['div', 'ul', 'li', 'i', 'p', 'span']
+tags = ['div', 'ul', 'li', 'i', 'p', 'span', 'button']
 
 root.addTag = addTag = (tagName) ->
     root[tagName] = (attributes, content) ->
@@ -46,11 +46,14 @@ root.content = addContent = (element, content) ->
 root.events = addEvents = (element, events) ->
     return unless events
 
+    disposables = {}
     keys = Object.keys events
     keys.forEach (key) ->
         element.addEventListener key, events[key]
+        disposables[key] = ->
+            element.removeEventListener key, events[key]
 
-    element
+    disposables
 
 root.$ = (selector, context = document) ->
     context.querySelectorAll(selector)

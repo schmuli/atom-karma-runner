@@ -8,7 +8,7 @@ class AtomKarmaReporter
             @results = new Results()
 
     onBrowserStart: (browser, info) ->
-        @results.addBrowserInfo browser, info
+        @results.addBrowser browser, info
 
     onBrowserLog: (browser, log, type) ->
         @log ?= new LogManager()

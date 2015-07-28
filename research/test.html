@@ -246,6 +246,47 @@
                 return SelectionManager;
             }());
 
+            var Results = (function(dom) {
+                function Results() {
+                    this.log = new Log();
+                    this.tree = new Tree(this.log);
+                };
+
+                Results.prototype.addBrowser = function(browser, info) {
+                    this.tree.addBrowser(browser, info);
+                    this.log.addBrowser(browser, info);
+                };
+
+                Results.prototype.updateStatus = function(browser, specResult) {
+                    this.tree.updateStatus(browser, specResult);
+                    this.log.updateStatus(browser);
+                };
+
+                Results.prototype.reset = function() {
+                    this.tree.reset();
+                    this.log.reset();
+                };
+
+                function TreeToolbar() {
+                    this.reset();
+                }
+
+                TreeToolbar.prototype.reset = function() {
+                    this.testCount = 0;
+                };
+
+                function LogToolbar() {
+                    this.reset();
+                }
+
+                LogToolbar.prototype.reset = function() {
+                    this.progress = 0;
+                    this.success = false;
+                };
+
+                return Results();
+            }());
+
             var Tree = (function(dom) {
                 var root;
 
@@ -424,6 +465,26 @@
                     }
                 };
 
+                var lastResult = {
+                    success: 1,
+                    failed: 0,
+                    skipped: 0,
+                    total: 8,
+                    totalTime: 0,
+                    netTime: 29,
+                    error: false,
+                    disconnected: false
+                };
+                var specInfo = {
+                    description: 'should change the state when sending correct message',
+                    id: 'spec0',
+                    log: [],
+                    skipped: false,
+                    success: true,
+                    suite: ['angular-state-machine-sync', 'ALL'],
+                    time: 29
+                };
+
                 return function() {
                     var tree = new Tree();
 
@@ -435,7 +496,8 @@
                         timeout: 0
                     }, {
                         action: function() {
-
+                            browser.lastResult = lastResult;
+                            tree.updateStatus(browser, specInfo);
                         },
                         timeout: 1000
                     }]);
