@@ -2,9 +2,9 @@ dom = require '../utils/dom'
 
 class TreeView
     constructor: (@parent, @log) ->
-        @_createElement()
-
         @toolbar = new TreeToolbarView @, @parent.treePane
+
+        @_createElement()
 
     reset: ->
 

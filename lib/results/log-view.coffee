@@ -2,9 +2,9 @@ dom = require '../utils/dom'
 
 class LogView
     constructor: (@parent) ->
-        @_createElement()
-
         @toolbar = new LogToolbarView @, @parent.logPane
+
+        @_createElement()
 
     reset: ->
         @toolbar.reset()

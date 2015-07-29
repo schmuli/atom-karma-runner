@@ -36,9 +36,9 @@ class ResultsView
             item: @element
 
     _createElement: ->
-        @treePane = dom.div 'pane tree'
+        @treePane = dom.div 'result-pane tree'
         @slider = dom.div 'slider'
-        @logPane = dom.div 'pane log'
+        @logPane = dom.div 'result-pane log'
         @element = dom.div 'karma-results', [
             @treePane
             @slider
