@@ -1,3 +1,4 @@
+path = require 'path'
 project = require './utils/project'
 karmaServer = require './karma/server'
 

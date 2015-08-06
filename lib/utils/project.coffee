@@ -23,7 +23,7 @@ getKarmaModule = (project) ->
 
 projectPath = (item) ->
     if item
-        atom.project.relativizePath(item)[0]
+        return atom.project.relativizePath(item)[0]
 
     projects = atom.project.getPaths()
     return projects[0] if projects.length > 0
